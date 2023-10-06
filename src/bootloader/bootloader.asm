@@ -4,7 +4,7 @@ jmp short bootloader_start                                           ; Jump to t
 nop                                                                  ; Pad out before disk description
 
 
-OEMLabel                     db                  "KNIGHTOSBOOT"      ; OEM (Original Equipment Manufacturer)
+OEMLabel                     db                  "KNIGHTOS"          ; OEM (Original Equipment Manufacturer)
 BytesPerCluster              dw                  512                 ; Bytes per sector
 SectorsPerCluster            db                  1                   ; Sectors per cluster
 ReservedForBoot              dw                  1                   ; Reserved sectors for boot record
@@ -16,7 +16,7 @@ SectorsPerFat                dw                  9                   ; Sectors p
 SectorsPerTrack              dw                  18                  ; Sectors per track (36/cylinder)
 Sides                        dw                  2                   ; Number of sides/heads
 HiddenSectors                dd                  0                   ; Number of hidden sectors
-LargeSectors                 ad                  0                   ; Number of LBA sectors
+LargeSectors                 dd                  0                   ; Number of LBA sectors
 DriveNo                      dw                  0                   ; Drive No: 0
 Signature                    db                  41                  ; Drive signature: 41 for floppy
 VolumeID                     dd                  00000000h           ; Volume ID: any number
