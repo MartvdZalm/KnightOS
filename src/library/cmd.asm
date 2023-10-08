@@ -1,9 +1,7 @@
 os_command_line:
 	call os_clear_screen
 
-	mov si, version_msg
-	call os_print_string
-	mov si, help_text
+	mov si, greetings_msg
 	call os_print_string
 
 
@@ -99,21 +97,41 @@ get_cmd:				; Main processing loop
 	call os_string_compare
 	jc dir_list
 
+	mov di, echo_string		; 'ECHO' entered?
+	call os_string_compare
+	jc near print_echo
 
+	mov di, greetings_string ; 'GREETING' entered?
+	call os_string_compare
+	jc near print_greetings
+
+	mov di, run_string		; 'RUN' entered?
+	call os_string_compare
+	jc near run_program
+
+
+total_fail:
+	mov si, invalid_msg
+	call os_print_string
+
+	jmp get_cmd
+
+; ----------------------------------------------------------------
+
+run_program:
 	; If the user hasn't entered any of the above commands, then we
 	; need to check for an executable file -- .BIN or .BAS, and the
 	; user may not have provided the extension
 
-	mov ax, command
+	mov ax, [param_list]
 	call os_string_uppercase
 	call os_string_length
-
 
 	; If the user has entered, say, MEGACOOL.BIN, we want to find that .BIN
 	; bit, so we get the length of the command, go four characters back to
 	; the full stop, and start searching from there
 
-	mov si, command
+	mov si, [param_list]
 	add si, ax
 
 	sub si, 4
@@ -122,19 +140,15 @@ get_cmd:				; Main processing loop
 	call os_string_compare
 	jc bin_file
 
-	mov di, pcx_extension		; Or is there a .PCX extension?
-	call os_string_compare
-	jc total_fail
-
 	jmp no_extension
 
-
 bin_file:
-	mov ax, command
+	mov ax, [param_list]
 	mov bx, 0
 	mov cx, 32768
 	call os_load_file
 	jc total_fail
+
 
 execute_bin:
 	mov si, command
@@ -175,21 +189,27 @@ no_extension:
 
 	jmp execute_bin
 
-
-
-total_fail:
-	mov si, invalid_msg
-	call os_print_string
-
-	jmp get_cmd
-
-
 no_kernel_allowed:
 	mov si, kern_warn_msg
 	call os_print_string
 
 	jmp get_cmd
 
+
+; -----------------------------------------------------------------
+
+print_greetings:
+	mov si, greetings_msg
+	call os_print_string
+	jmp get_cmd
+
+; -----------------------------------------------------------------
+
+print_echo:
+	mov si, [param_list]
+	call os_print_string
+	call os_print_newline
+	jmp get_cmd
 
 ; ------------------------------------------------------------------
 
@@ -527,7 +547,7 @@ dir_list:
 	jmp short .done
 
   .cont1:
-;	mov di, bx			; ES:DI points to directory buffer
+  	; mov di, bx			; ES:DI points to directory buffer
 	mov di, disk_buffer		; ES:DI points to directory buffer
 
   .outer_loop:
@@ -561,7 +581,6 @@ dir_list:
 
 	call dir_entry_dump		; ES:DI points to entry
 	dec cx
-
   .next_entry:
 	mov dx, es
 	add dx, ParaPerEntry
@@ -906,9 +925,19 @@ exit:
 	bas_extension		db '.BAS', 0
 	pcx_extension		db '.PCX', 0
 
-	prompt			db '> ', 0
+	prompt			db '$: ', 0
 
-	help_text		db 'Commands: DIR, LS, COPY, REN, DEL, CAT, SIZE, CLS, HELP, TIME, DATE, VER, EXIT', 13, 10, 0
+	greetings_msg db " _  __      _       _     _      ___  ____", 13, 10,
+			  	  db "| |/ /_ __ (_) __ _| |__ | |_   / _ \/ ___|", 13, 10,
+			      db "| ' /| '_ \| |/ _` | '_ \| __| | | | \___ \ ", 13, 10,
+			      db "| . \| | | | | (_| | | | | |_  | |_| |___) |", 13, 10,
+			      db "|_|\_\_| |_|_|\__, |_| |_|\__|  \___/|____/ ", 13, 10,
+			      db "              |___/                         ", 13, 10, 0
+
+	help_text		db 'Welcome to KnightOS!', 13, 10,
+					db 'This is the command line interface.', 13, 10
+					db 'Type commands for more information.', 13, 10, 0
+
 	invalid_msg		db 'No such command or program', 13, 10, 0
 	nofilename_msg		db 'No filename or not enough filenames', 13, 10, 0
 	notfound_msg		db 'File not found', 13, 10, 0
@@ -931,6 +960,9 @@ exit:
 	copy_string		db 'COPY', 0
 	size_string		db 'SIZE', 0
 	list_string		db 'LS', 0
+	echo_string		db 'ECHO', 0
+	greetings_string db 'GREETING', 0
+	run_string		db 'RUN', 0
 
 	kern_file_string	db 'KERNEL', 0
 	kern_warn_msg		db 'Cannot execute kernel file!', 13, 10, 0

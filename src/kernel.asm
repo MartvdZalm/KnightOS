@@ -139,19 +139,19 @@ no_change:
 	; a menu-driven program selector, or a command-line interface
 
 option_screen:
-	mov ax, os_init_msg		; Set up the welcome screen
-	mov bx, os_version_msg
-	mov cx, 10011111b		; Colour: white text on light blue
-	call os_draw_background
+	; mov ax, os_init_msg		; Set up the welcome screen
+	; mov bx, os_version_msg
+	; mov cx, 10011111b		; Colour: white text on light blue
+	; call os_draw_background
 
-	mov ax, dialog_string_1		; Ask if user wants app selector or command-line
-	mov bx, dialog_string_2
-	mov cx, dialog_string_3
-	mov dx, 1			; We want a two-option dialog box (OK or Cancel)
-	call os_dialog_box
+	; mov ax, dialog_string_1		; Ask if user wants app selector or command-line
+	; mov bx, dialog_string_2
+	; mov cx, dialog_string_3
+	; mov dx, 1			; We want a two-option dialog box (OK or Cancel)
+	; call os_dialog_box
 
-	cmp ax, 1			; If OK (option 0) chosen, start app selector
-	jne near app_selector
+	; cmp ax, 1			; If OK (option 0) chosen, start app selector
+	; jne near app_selector
 
 	call os_clear_screen		; Otherwise clean screen and start the CLI
 	call os_command_line
