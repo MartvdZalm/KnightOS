@@ -49,7 +49,7 @@ rm -rf tmp-loop
 
 mkdir tmp-loop && mount -o loop -t vfat disk_images/KnightOS.flp tmp-loop && cp src/kernel.bin tmp-loop/
 
-cp programs/*.bin tmp-loop
+cp programs/*.bin programs/*.txt tmp-loop
 
 sleep 0.2
 

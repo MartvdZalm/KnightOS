@@ -105,33 +105,25 @@ get_cmd:				; Main processing loop
 	call os_string_compare
 	jc near print_greetings
 
-	mov di, run_string		; 'RUN' entered?
+	mov di, commands_string ; 'COMMANDS' entered?
 	call os_string_compare
-	jc near run_program
+	jc near print_commands
 
 
-total_fail:
-	mov si, invalid_msg
-	call os_print_string
-
-	jmp get_cmd
-
-; ----------------------------------------------------------------
-
-run_program:
 	; If the user hasn't entered any of the above commands, then we
 	; need to check for an executable file -- .BIN or .BAS, and the
 	; user may not have provided the extension
 
-	mov ax, [param_list]
+	mov ax, command
 	call os_string_uppercase
 	call os_string_length
+
 
 	; If the user has entered, say, MEGACOOL.BIN, we want to find that .BIN
 	; bit, so we get the length of the command, go four characters back to
 	; the full stop, and start searching from there
 
-	mov si, [param_list]
+	mov si, command
 	add si, ax
 
 	sub si, 4
@@ -142,8 +134,9 @@ run_program:
 
 	jmp no_extension
 
+
 bin_file:
-	mov ax, [param_list]
+	mov ax, command
 	mov bx, 0
 	mov cx, 32768
 	call os_load_file
@@ -186,8 +179,17 @@ no_extension:
 	mov bx, 0
 	mov cx, 32768
 	call os_load_file
+	jc total_fail
 
 	jmp execute_bin
+
+
+total_fail:
+	mov si, invalid_msg
+	call os_print_string
+
+	jmp get_cmd
+
 
 no_kernel_allowed:
 	mov si, kern_warn_msg
@@ -195,6 +197,14 @@ no_kernel_allowed:
 
 	jmp get_cmd
 
+
+
+; -----------------------------------------------------------------
+
+print_commands:
+	mov si, commands_msg
+	call os_print_string
+	jmp get_cmd
 
 ; -----------------------------------------------------------------
 
@@ -924,6 +934,7 @@ exit:
 	bin_extension		db '.BIN', 0
 	bas_extension		db '.BAS', 0
 	pcx_extension		db '.PCX', 0
+	knight_extension	db '.KNIGHT', 0
 
 	prompt			db '$: ', 0
 
@@ -939,17 +950,17 @@ exit:
 					db 'Type commands for more information.', 13, 10, 0
 
 	invalid_msg		db 'No such command or program', 13, 10, 0
-	nofilename_msg		db 'No filename or not enough filenames', 13, 10, 0
-	notfound_msg		db 'File not found', 13, 10, 0
-	writefail_msg		db 'Could not write file. Write protected or invalid filename?', 13, 10, 0
+	nofilename_msg	db 'No filename or not enough filenames', 13, 10, 0
+	notfound_msg	db 'File not found', 13, 10, 0
+	writefail_msg	db 'Could not write file. Write protected or invalid filename?', 13, 10, 0
 	exists_msg		db 'Target file already exists!', 13, 10, 0
-	finished_msg		db '>>> Program finished, press any key to continue...', 0
-
+	finished_msg	db '>>> Program finished, press any key to continue...', 0
 	version_msg		db 'KnightOS ', KNIGHTOS_VER, 13, 10, 0
+	commands_msg 	db 'Commands: DIR, LS, COPY, REN, DEL, CAT, SIZE, CLEAR, HELP, TIME, DATE, VER, EXIT, RUN, ECHO', 13, 10, 0
 
 	exit_string		db 'EXIT', 0
 	help_string		db 'HELP', 0
-	cls_string		db 'CLS', 0
+	cls_string		db 'CLEAR', 0
 	dir_string		db 'DIR', 0
 	time_string		db 'TIME', 0
 	date_string		db 'DATE', 0
@@ -962,7 +973,7 @@ exit:
 	list_string		db 'LS', 0
 	echo_string		db 'ECHO', 0
 	greetings_string db 'GREETING', 0
-	run_string		db 'RUN', 0
+	commands_string db 'COMMANDS', 0
 
 	kern_file_string	db 'KERNEL', 0
 	kern_warn_msg		db 'Cannot execute kernel file!', 13, 10, 0
