@@ -5,10 +5,8 @@
 ; *********************************************************
 
 bits 16 																									 ; We are for now in 16 bit real mode
-
-org 0x7c00																						   			 	 ; We are loaded by BIOS at 0x7C00
-
-start: jmp loader																							 ; Jump over BPB block
+org 0x7c00																						   			 ; We are loaded by BIOS at 0x7C00
+jmp loader																							 		 ; Jump over BPB block
 
 ; *********************************************************
 ;	BPB (Bios Parameter Block)
@@ -34,21 +32,21 @@ bsSerialNumber:				DD 0xAB29F1C7
 bsVolumeLabel:              DB "KNIGHT OS  "
 bsFileSystem:               DB "FAT12   "
 
-msg	DB	"Welcome to My Operating System!", 0		; the string to print
+message:					DB	"Welcome to My Operating System!", 0		; the string to print
 
 ; *********************************************************
 ;	Prints a string
 ; 	DS=>SI: 0 terminated string
 ; *********************************************************
-Print:
+print:
 	lodsb
 	or al, al
-	jz PrintDone
+	jz print_done
 	mov ah, 0eh
 	int 10h
-	jmp Print
+	jmp print
 
-PrintDone:
+print_done:
 	ret 
 
 ; *********************************************************
@@ -56,20 +54,19 @@ PrintDone:
 ; *********************************************************
 
 loader:
-
 	xor	ax, ax																								 ; Setup segments to insure they are 0. Remember that
-	mov	ds, ax																								 ; we have ORG 0x7c00. This means all addresses are based
+	mov	ds, ax																								 
 	mov	es, ax																																															
 
-	mov	si, msg																								 ; our message to print
-	call Print																							 	 ; call our print function
+	mov	si, message																								 ; Message to print
+	call print																							 	 ; Call print function
 
-	xor	ax, ax																								 ; clear ax
-	int	0x12																								 ; get the amount of KB from the BIOS
+	xor	ax, ax																								 ; Clear ax
+	int	0x12																								 ; Get the amount of KB from the BIOS
 
 	cli																										 ; Clear all Interrupts
-	hlt																										 ; halt the system
+	hlt																										 ; Halt the system
 	
-times 510 - ($-$$) DB 0																						 ; We have to be 512 bytes. Clear the rest of the bytes with 0
+times 510 - ($-$$) DB 0																						 ; Bootloader needs to be 512 bytes. Clear the rest of the bytes with 0
 
 DW 0xAA55																								     ; Boot Signiture
