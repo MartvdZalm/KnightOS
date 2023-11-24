@@ -1,5 +1,6 @@
 #include "types.h"
 #include "gdt.h"
+#include "interrupts.h"
 
 void printf(char* str)
 {
@@ -12,8 +13,8 @@ void printf(char* str)
 		switch (str[i]) {
 
 		case '\n':
-			y++;
 			x = 0;
+			y++;
 			break;
 
 		default:
@@ -22,9 +23,9 @@ void printf(char* str)
 			break;
 		}
 
-		if (x > 80) {
-			y++;
+		if (x >= 80) {
 			x = 0;
+			y++;
 		}
 
 		if (y >= 25) {
@@ -44,7 +45,6 @@ typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
 
-
 extern "C" void callConstructors()
 {
 	for (constructor* i = &start_ctors; i != &end_ctors; i++) {
@@ -52,12 +52,14 @@ extern "C" void callConstructors()
 	}
 }
 
-extern "C" void kernelMain(const void* multiboot_structure, uint32_t magicnumber)
+extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
 	printf("Welcome To KnightOS!\n");
-	printf("Welome To KnightOS!");
+	printf("This is a OS made by Mast van der Zalm!\n");
 
 	GlobalDescriptorTable gdt;
+	InterruptManager interrupts(&gdt);
+	interrupts.Activate();
 
 	while (1);
 }
